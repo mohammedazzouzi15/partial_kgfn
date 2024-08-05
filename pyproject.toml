@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "partial_kgfn"
+maintainers = [
+  { name = "Mohammed Azzouzi", email = "mohammed.azzouzi15@ic.ac.uk" },
+]
+
+dependencies = [
+    "botorch",
+    "gpytorch",
+    "torch",
+    "numpy",
+    "scipy",
+    "pandas",
+    "matplotlib",
+    "jupyter",
+]
+requires-python = ">=3.7"
+dynamic = ["version"]
+readme = "README.rst"
+
+[project.optional-dependencies]
+dev = [
+  "black",
+  "ruff",
+  "mypy",
+  "pytest",
+  "pytest-cov",
+  "sphinx",
+  "sphinx-copybutton",
+  "build",
+  "twine",
+  "furo",
+  "types-psutil",
+]
+
+
+[tool.setuptools_scm]
+
+[tool.ruff]
+line-length = 79
+extend-select = ["I"]
+
+[tool.black]
+line-length = 79
+
+[tool.mypy]
+show_error_codes = true
+implicit_optional = false
+warn_no_return = true
+strict_optional = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+warn_unreachable = true
+disallow_any_generics = true
+
+[[tool.mypy.overrides]]
+module = [
+  "qml.*"
+]
+ignore_missing_imports = true

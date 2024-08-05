@@ -13,7 +13,7 @@ from typing import List, Optional, Union
 
 import pandas as pd
 import torch
-from botorch import fit_gpytorch_model
+from botorch.fit import fit_gpytorch_mll
 from botorch.acquisition.analytic import PosteriorMean
 from botorch.models import FixedNoiseGP, SingleTaskGP
 from botorch.models.transforms import Standardize
@@ -37,7 +37,7 @@ class Freesolv3FunctionNetwork(SyntheticTestFunction):
     node_dims = [3, 1]
     node_groups = [[0], [1]]
     data = pd.read_csv(
-        f"{current_directory}/partial_kgfn/test_functions/freesolv_NN_rep3dim.csv"
+        f"{current_directory}/partial_kgfn/partial_kgfn/test_functions/freesolv_NN_rep3dim.csv"
     )
     data_tensor = torch.tensor(data.values)
     train_X = [data_tensor[..., :3], data_tensor[..., [3]]]
@@ -52,7 +52,7 @@ class Freesolv3FunctionNetwork(SyntheticTestFunction):
         model0.likelihood,
         model0,
     )
-    fit_gpytorch_model(node_mll_0)
+    fit_gpytorch_mll(node_mll_0)
     model1 = SingleTaskGP(
         train_X=data_tensor[..., [3]],
         train_Y=data_tensor[..., [4]],
@@ -63,7 +63,7 @@ class Freesolv3FunctionNetwork(SyntheticTestFunction):
         model1.likelihood,
         model1,
     )
-    fit_gpytorch_model(node_mll_1)
+    fit_gpytorch_mll(node_mll_1)
     f_node_0 = PosteriorMean(model0)
     f_node_1 = PosteriorMean(model1)
     bounds = torch.Tensor([[0 for _ in range(3)], [1 for _ in range(3)]]).to(

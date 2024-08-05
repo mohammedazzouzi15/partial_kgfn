@@ -1,0 +1,27 @@
+Metadata-Version: 2.1
+Name: partial_kgfn
+Version: 0.1.dev14+gc5662de.d20240802
+Maintainer-email: Mohammed Azzouzi <mohammed.azzouzi15@ic.ac.uk>
+Requires-Python: >=3.7
+Description-Content-Type: text/x-rst
+License-File: LICENSE
+Requires-Dist: botorch
+Requires-Dist: gpytorch
+Requires-Dist: torch
+Requires-Dist: numpy
+Requires-Dist: scipy
+Requires-Dist: pandas
+Requires-Dist: matplotlib
+Requires-Dist: jupyter
+Provides-Extra: dev
+Requires-Dist: black; extra == "dev"
+Requires-Dist: ruff; extra == "dev"
+Requires-Dist: mypy; extra == "dev"
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
+Requires-Dist: sphinx; extra == "dev"
+Requires-Dist: sphinx-copybutton; extra == "dev"
+Requires-Dist: build; extra == "dev"
+Requires-Dist: twine; extra == "dev"
+Requires-Dist: furo; extra == "dev"
+Requires-Dist: types-psutil; extra == "dev"

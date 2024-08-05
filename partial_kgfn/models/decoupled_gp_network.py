@@ -10,7 +10,7 @@ from __future__ import annotations
 from typing import Any, List, Optional, Tuple
 
 import torch
-from botorch import fit_gpytorch_model
+from botorch.fit import fit_gpytorch_mll
 from botorch.acquisition.objective import PosteriorTransform
 from botorch.logging import logger
 from botorch.models import FixedNoiseGP, SingleTaskGP
@@ -85,7 +85,8 @@ class GaussianProcessNetwork(Model):
             self.train_Yvar = train_Yvar
         else:
             self.train_Yvar = [
-                torch.ones_like(self.train_Y[k]) * 1e-6 for k in range(self.n_nodes)
+                torch.ones_like(self.train_Y[k]) * 1e-6
+                for k in range(self.n_nodes)
             ]
         self.modified_prior = modified_prior
         if node_GPs is not None:
@@ -349,25 +350,29 @@ class MultivariateNormalNetwork(TorchPosterior):
         Returns:
             A `sample_shape x self.event_shape`-dim tensor of samples drawn from the posterior.
         """
-        nodes_samples = torch.empty(
-            base_samples.shape
-        ) 
+        nodes_samples = torch.empty(base_samples.shape)
         nodes_samples = nodes_samples.to(self.device).to(self.dtype)
         nodes_samples_available = [False for k in range(self.n_nodes)]
         batch_shape = base_samples.shape[len(sample_shape) : -2]
 
         if len(batch_shape) > 0:
-            self.X = torch.broadcast_to(self.X, batch_shape + self.X.shape[-2:])
+            self.X = torch.broadcast_to(
+                self.X, batch_shape + self.X.shape[-2:]
+            )
 
         for k in self.root_nodes:
             if self.active_input_indices is not None:
                 X_node_k = self.X[..., self.active_input_indices[k]]
             else:
-                X_node_k = self.X 
-            multivariate_normal_at_node_k = self.node_GPs[k].posterior(X_node_k)
+                X_node_k = self.X
+            multivariate_normal_at_node_k = self.node_GPs[k].posterior(
+                X_node_k
+            )
             nodes_samples[..., k] = multivariate_normal_at_node_k.rsample(
-                sample_shape, base_samples[..., [k]]  
-            )[..., 0]
+                sample_shape,  # base_samples[..., [k]]
+            )[
+                ..., 0
+            ]  # sample_shape,
             nodes_samples_available[k] = True
 
         while not all(nodes_samples_available):
@@ -376,31 +381,26 @@ class MultivariateNormalNetwork(TorchPosterior):
                 if not nodes_samples_available[k] and all(
                     [nodes_samples_available[j] for j in parent_nodes]
                 ):
-                    parent_nodes_samples = nodes_samples[
-                        ..., parent_nodes
-                    ]  
-                    X_node_k = self.X[
-                        ..., self.active_input_indices[k]
-                    ] 
-                    aux_shape = [sample_shape[0]] + [
-                        1
-                    ] * X_node_k.ndim  
-                    X_node_k = X_node_k.unsqueeze(0).repeat(
-                        *aux_shape
-                    ) 
-                    X_node_k = torch.cat(
-                        [X_node_k, parent_nodes_samples], -1
-                    ) 
-                    multivariate_normal_at_node_k = self.node_GPs[k].posterior(X_node_k)
-                    nodes_samples[..., k] = multivariate_normal_at_node_k.rsample(
-                        sample_shape=torch.Size([1]),
-                        base_samples=base_samples[..., [k]].unsqueeze(dim=0),
-                    )[0, ..., 0]
+                    parent_nodes_samples = nodes_samples[..., parent_nodes]
+                    X_node_k = self.X[..., self.active_input_indices[k]]
+                    aux_shape = [sample_shape[0]] + [1] * X_node_k.ndim
+                    X_node_k = X_node_k.unsqueeze(0).repeat(*aux_shape)
+                    X_node_k = torch.cat([X_node_k, parent_nodes_samples], -1)
+                    multivariate_normal_at_node_k = self.node_GPs[k].posterior(
+                        X_node_k
+                    )
+                    nodes_samples[..., k] = (
+                        multivariate_normal_at_node_k.rsample(
+                            sample_shape=torch.Size([1]),
+                        )[0, ..., 0]
+                    )
                     nodes_samples_available[k] = True
         return nodes_samples
 
 
-def fit_gp_network(model: GaussianProcessNetwork, idx: Optional[int] = None) -> None:
+def fit_gp_network(
+    model: GaussianProcessNetwork, idx: Optional[int] = None
+) -> None:
     r"""Fit GP network model.
 
     Args:
@@ -416,13 +416,13 @@ def fit_gp_network(model: GaussianProcessNetwork, idx: Optional[int] = None) -> 
                 model.node_GPs[k].likelihood,
                 model.node_GPs[k],
             )
-            fit_gpytorch_model(node_mll)
+            fit_gpytorch_mll(node_mll)
     else:
         node_mll = ExactMarginalLogLikelihood(
             model.node_GPs[idx].likelihood,
             model.node_GPs[idx],
         )
-        fit_gpytorch_model(node_mll)
+        fit_gpytorch_mll(node_mll)
 
 
 def initialize_GP(
@@ -456,9 +456,9 @@ def initialize_GP(
             model.covar_module.base_kernel.lengthscale_prior.concentration = (
                 torch.Tensor([5]).to(torch.double)
             )
-            model.covar_module.base_kernel.lengthscale_prior.rate = torch.Tensor(
-                [2]
-            ).to(torch.double)
+            model.covar_module.base_kernel.lengthscale_prior.rate = (
+                torch.Tensor([2]).to(torch.double)
+            )
     else:
         logger.info(f"Consider noisy observations: SingleTaskGP is used.")
         model = SingleTaskGP(
@@ -471,7 +471,7 @@ def initialize_GP(
             model.covar_module.base_kernel.lengthscale_prior.concentration = (
                 torch.Tensor([5]).to(torch.double)
             )
-            model.covar_module.base_kernel.lengthscale_prior.rate = torch.Tensor(
-                [2]
-            ).to(torch.double)
+            model.covar_module.base_kernel.lengthscale_prior.rate = (
+                torch.Tensor([2]).to(torch.double)
+            )
     return model

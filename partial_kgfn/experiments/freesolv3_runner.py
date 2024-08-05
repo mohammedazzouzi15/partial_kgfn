@@ -17,9 +17,9 @@ torch.set_default_dtype(torch.float64)
 debug._set_state(True)
 import logging
 
-logger = logging.getLogger("botorch")
-logger.setLevel(logging.INFO)
-logger.handlers.pop()
+#logger = logging.getLogger("botorch")
+#logger.setLevel(logging.INFO)
+#logger.handlers.pop()
 
 
 def main(
@@ -54,7 +54,7 @@ def main(
         problem_name = f"freesolvN{problem.dim}"
     else:
         problem_name = f"freesolv{problem.dim}"
-    network_objective = GenericMCObjective(lambda Y: Y[..., -1])
+    network_objective = GenericMCObjective(lambda Y,X: Y[..., -1])
     metrics = ["obs_val", "pos_mean"]
     run_one_trial(
         problem_name=problem_name,

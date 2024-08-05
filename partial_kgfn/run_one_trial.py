@@ -16,12 +16,12 @@ from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
-from botorch import fit_gpytorch_model
+from botorch.fit import fit_gpytorch_mll
 from botorch.acquisition import ExpectedImprovement
 from botorch.acquisition import PosteriorMean as GPPosteriorMean
 from botorch.acquisition import qExpectedImprovement
 from botorch.acquisition import qKnowledgeGradient as standardKG
-from botorch.acquisition import qSimpleRegret
+from botorch.acquisition.monte_carlo import qSimpleRegret
 from botorch.acquisition.objective import GenericMCObjective, MCAcquisitionObjective
 from botorch.logging import logger
 from botorch.models.model import Model
@@ -143,7 +143,7 @@ def run_one_trial(
                 model.likelihood,
                 model,
             )
-            fit_gpytorch_model(mll)
+            fit_gpytorch_mll(mll)
             posterior_mean_function = GPPosteriorMean(model=model)
             best_design, best_post_mean = optimize_acqf(
                 acq_function=posterior_mean_function,
@@ -239,7 +239,7 @@ def run_one_trial(
                 model.likelihood,
                 model,
             )
-            fit_gpytorch_model(mll)
+            fit_gpytorch_mll(mll)
             model_network = GaussianProcessNetwork(
                 train_X=train_X_network,
                 train_Y=train_Y_network,
@@ -383,7 +383,7 @@ def run_one_trial(
                     model.likelihood,
                     model,
                 )
-                fit_gpytorch_model(mll)
+                fit_gpytorch_mll(mll)
                 train_X_network, train_Y_network = construct_obs_set(
                     X=train_X.clone(),
                     Y=network_output_at_X,
